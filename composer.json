@@ -1,0 +1,27 @@
+{
+    "name": "strukt/install",
+    "description": "Strukt Framework Installer",
+    "keywords": ["strukt"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Samuel Weru",
+            "email": "samweru@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^7.4",
+        "strukt/console": "1.0.0",
+        "strukt/process": "v1.0.1-alpha"
+    },
+    "bin": [
+        "bin/strukt"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Strukt\\Console\\Command\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
