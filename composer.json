@@ -22,6 +22,5 @@
             "Strukt\\Console\\Command\\": "src/"
         }
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    "minimum-stability": "dev"
 }
