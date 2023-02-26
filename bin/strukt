@@ -5,13 +5,4 @@ require "vendor/autoload.php";
 
 $console = new Strukt\Console\Application("Strukt Installer", "strukt");
 $console->add(new Strukt\Console\Command\Installer);
-$output = $console->run($_SERVER["argv"]);
-
-$output = explode("\n", $output);
-
-unset($output[0]);
-unset($output[1]);
-unset($output[2]);
-
-exit(implode("\n", $output));
-
+exit($console->run($_SERVER["argv"]));
