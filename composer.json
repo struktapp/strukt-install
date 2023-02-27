@@ -12,7 +12,8 @@
     "require": {
         "php": "^7.4",
         "strukt/console": "v1.0.0",
-        "strukt/process": "v1.0.1"
+        "strukt/process": "v1.0.1",
+        "vlucas/phpdotenv": "5.5.x-dev"
     },
     "bin": [
         "bin/strukt"
