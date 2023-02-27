@@ -13,7 +13,7 @@
         "php": "^7.4",
         "strukt/console": "v1.0.0",
         "strukt/process": "v1.0.1",
-        "vlucas/phpdotenv": "5.5.x-dev"
+        "vlucas/phpdotenv": "v5.5.0"
     },
     "bin": [
         "bin/strukt"
