@@ -11,7 +11,7 @@
     ],
     "require": {
         "php": "^7.4",
-        "strukt/console": "1.0.0",
+        "strukt/console": "v1.0.0",
         "strukt/process": "v1.0.1"
     },
     "bin": [
