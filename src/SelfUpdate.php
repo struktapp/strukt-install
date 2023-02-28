@@ -9,7 +9,7 @@ use Strukt\Process;
 use Dotenv\Dotenv;
 
 /**
-* selfupdate    Update Strukt Installer
+* update:me    Update Strukt Installer
 */
 class SelfUpdate extends \Strukt\Console\Command{
 

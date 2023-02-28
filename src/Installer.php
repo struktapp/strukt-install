@@ -41,5 +41,11 @@ class Installer extends \Strukt\Console\Command{
 
 			echo Color::write("cyan", $streamOutput);
 		});
+
+		if(chdir($app_name)){
+
+			exec(sprintf("php xcli app:make %s", $app_name));
+			exec("php xcli app:reload");
+		}
 	}
 }
