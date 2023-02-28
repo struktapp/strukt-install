@@ -11,4 +11,5 @@ if (file_exists(__DIR__.'/../../../autoload.php')) {
 
 $console = new Strukt\Console\Application("Strukt Installer", "strukt");
 $console->add(new Strukt\Console\Command\Installer);
+$console->add(new Strukt\Console\Command\SelfUpdate);
 exit($console->run($_SERVER["argv"]));
