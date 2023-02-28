@@ -21,20 +21,16 @@ use Dotenv\Dotenv;
 */
 class Installer extends \Strukt\Console\Command{
 
-	public function __construct(){
-
-		$dotenv = Dotenv::createImmutable(__DIR__."/../");
-		$dotenv->load();
-	}
-
 	public function execute(Input $in, Output $out){
 
 		$app_name = $in->get("app_name");
 		if(empty($app_name))
 			throw new \Exception("Argument [app_name] is required!");
 
-		$package = $_ENV["package"];
-		$version = $_ENV["version"];
+		$setting = parse_ini_file(__DIR__."/../strukt.ini");
+
+		$package = $setting["package"]["main"];
+		$version = $setting["package"]["version"];
 		$command = sprintf("composer create-project %s:%s --prefer-dist %s",
 						$package,
 						$version,
