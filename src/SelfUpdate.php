@@ -21,7 +21,7 @@ class SelfUpdate extends \Strukt\Console\Command{
 
 	public function execute(Input $in, Output $out){
 
-		$cmd = "composer update strukt/install --working-dir=../../../"
+		$cmd = "composer update strukt/install --working-dir=../../../";
 
 		Process::switchChannels();
 		$ps = Process::run([$cmd], function($streamOutput){
