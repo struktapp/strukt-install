@@ -18,7 +18,7 @@ strukt new contactapp
 Install available packages and publish.
 
 ```sh
-strukt package:install test contactapp/ --publish
+strukt package:install tests contactapp/ --publish
 ```
 
 Available packages:
