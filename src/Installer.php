@@ -6,7 +6,6 @@ use Strukt\Console\Color;
 use Strukt\Console\Input;
 use Strukt\Console\Output;
 use Strukt\Process;
-use Dotenv\Dotenv;
 
 /**
 * new    Install latest Strukt
