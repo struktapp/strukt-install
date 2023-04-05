@@ -43,6 +43,12 @@ class Installer extends \Strukt\Console\Command{
 
 		if(chdir($app_name)){
 
+			if(!preg_match("/^[A-Za-z0-9\_\-]*$/", $app_name))
+				new \Exception(sprintf("Invalid app_name:[%s]", $app_name));
+
+			$app_name = str_replace(["-","."], "_", $app_name);
+			$app_name = trim($app_name, "*-_");
+
 			exec(sprintf("php xcli app:make %s", $app_name));
 			exec("php xcli app:reload");
 		}
