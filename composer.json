@@ -10,9 +10,9 @@
         }
     ],
     "require": {
-        "php": "^7.4",
+        "php": "^8.1",
         "strukt/console": "v1.0.0",
-        "strukt/process": "v1.0.1"
+        "strukt/process": "v1.1.0"
     },
     "bin": [
         "bin/strukt"
