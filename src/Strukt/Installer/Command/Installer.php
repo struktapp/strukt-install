@@ -35,6 +35,8 @@ class Installer extends \Strukt\Console\Command{
 						$version,
 						$app_name);
 
+		echo(sprintf("%s\n", $command));
+
 		switchChannels();
 		$ps = process([$command], function($streamOutput){
 
