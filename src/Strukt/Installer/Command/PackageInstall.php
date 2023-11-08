@@ -36,7 +36,7 @@ class PackageInstall extends \Strukt\Console\Command{
 		if(!preg_match("/^pkg\-/", $module))
 			$module = sprintf("pkg-%s", $module);
 
-		$setting = parse_ini_file(__DIR__."/../strukt.ini");
+		$setting = parse_ini_file(__DIR__."/../../../../strukt.ini");
 		if(!array_key_exists($module, $setting["modules"]))
 			throw new \Exception(sprintf("Module [%s] does not exist!", $module));
 
