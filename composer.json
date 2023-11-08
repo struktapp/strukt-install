@@ -18,8 +18,8 @@
         "bin/strukt"
     ],
     "autoload": {
-        "psr-4": {
-            "Strukt\\Console\\Command\\": "src/"
+        "psr-0": {
+            "Strukt\\": "src/"
         }
     },
     "minimum-stability": "dev"

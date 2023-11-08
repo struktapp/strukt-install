@@ -1,6 +1,6 @@
 <?php
 
-namespace Strukt\Console\Command;
+namespace Strukt\Installer\Command;
 
 use Strukt\Console\Color;
 use Strukt\Console\Input;
