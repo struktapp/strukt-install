@@ -35,10 +35,10 @@ class Installer extends \Strukt\Console\Command{
 						$version,
 						$app_name);
 
-		Process::switchChannels();
-		$ps = Process::run([$command], function($streamOutput){
+		switchChannels();
+		$ps = process([$command], function($streamOutput){
 
-			echo Color::write("cyan", $streamOutput);
+			echo color("cyan", $streamOutput);
 		});
 
 		if(chdir($app_name)){

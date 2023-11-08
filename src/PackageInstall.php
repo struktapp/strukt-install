@@ -47,10 +47,10 @@ class PackageInstall extends \Strukt\Console\Command{
 						$setting["modules"][$module],
 						$name);
 
-		Process::switchChannels();
-		$ps = Process::run([$cmd], function($streamOutput){
+		switchChannels();
+		$ps = process([$cmd], function($streamOutput){
 
-			echo Color::write("cyan", $streamOutput);
+			echo color("cyan", $streamOutput);
 		});
 
 		$reqs = [];

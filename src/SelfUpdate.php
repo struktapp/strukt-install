@@ -18,10 +18,10 @@ class SelfUpdate extends \Strukt\Console\Command{
 
 		$cmd = sprintf("composer update strukt/install --working-dir=%s", $composer_home);
 
-		Process::switchChannels();
-		$ps = Process::run([$cmd], function($streamOutput){
+		switchChannels();
+		$ps = process([$cmd], function($streamOutput){
 
-			echo Color::write("cyan", $streamOutput);
+			echo color("cyan", $streamOutput);
 		});
 	}
 }
