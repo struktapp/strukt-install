@@ -40,7 +40,8 @@ class Installer extends \Strukt\Console\Command{
 		switchChannels();
 		$ps = process([$command], function($streamOutput) use($app_name){
 
-			echo color("cyan", $streamOutput);
+			if(!is_null($streamOutput))
+				echo color("cyan", $streamOutput);
 
 			if(is_null($streamOutput))//when finished processing
 				if(chdir($app_name)){
