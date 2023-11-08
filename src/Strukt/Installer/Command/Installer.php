@@ -30,7 +30,7 @@ class Installer extends \Strukt\Console\Command{
 
 		$package = $setting["package"]["main"];
 		$version = $setting["package"]["version"];
-		$command = sprintf("composer create-project %s:%s --prefer-dist %s",
+		$command = sprintf("composer create-project %s:%s --prefer-dist --stability=dev %s",
 						$package,
 						$version,
 						$app_name);
