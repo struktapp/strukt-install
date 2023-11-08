@@ -50,7 +50,8 @@ class PackageInstall extends \Strukt\Console\Command{
 		switchChannels();
 		$ps = process([$cmd], function($streamOutput){
 
-			echo color("cyan", $streamOutput);
+			if(!is_null($streamOutput))
+				echo color("cyan", $streamOutput);
 		});
 
 		$reqs = [];
