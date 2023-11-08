@@ -26,7 +26,7 @@ class Installer extends \Strukt\Console\Command{
 		if(empty($app_name))
 			throw new \Exception("Argument [app_name] is required!");
 
-		$setting = parse_ini_file(__DIR__."/../strukt.ini");
+		$setting = parse_ini_file(__DIR__."/../../../../strukt.ini");
 
 		$package = $setting["package"]["main"];
 		$version = $setting["package"]["version"];
