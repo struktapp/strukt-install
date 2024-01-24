@@ -54,6 +54,8 @@ class Installer extends \Strukt\Console\Command{
 
 					exec(sprintf("php xcli app:make %s", $app_name));
 					exec("php xcli app:reload");
+					exec("php xcli cache:clear");
+					exec("php xcli cache:make");
 				}
 		});			
 	}
