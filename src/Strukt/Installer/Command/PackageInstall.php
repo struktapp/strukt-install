@@ -8,11 +8,11 @@ use Strukt\Console\Output;
 use Strukt\Process;
 
 /**
-* add:package    Install Strukt Module
+* add    Install Strukt Module
 *
 * Usage:
 *
-*       add:package <module> [<app_name>] [--publish]
+*       add <module> [<app_name>] [--publish]
 *
 * Arguments:
 *
