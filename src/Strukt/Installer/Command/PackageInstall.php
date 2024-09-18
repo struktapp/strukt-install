@@ -65,10 +65,10 @@ class PackageInstall extends \Strukt\Console\Command{
 					foreach($setting[$reqKey] as $req){
 
 						$reqs[] = $req;
-						exec(sprintf("php ./xcli package:publish %s", $req));
+						exec(sprintf("php xcli package:publish %s", $req));
 					}
 
-				exec(sprintf("php ./xcli package:publish %s", $module));
+				exec(sprintf("php xcli package:publish %s", $module));
 			}
 
 			$isPublished = true;
@@ -84,7 +84,7 @@ class PackageInstall extends \Strukt\Console\Command{
 
 					$providers = $setting[$prvKey];
 					foreach($providers as $provider)
-						exec(sprintf("php ./xcli sys:util enable provider %s", $provider));
+						exec(sprintf("php xcli sys:util enable provider %s", $provider));
 				}
 
 				$mdlKey = sprintf("mdl.%s", $req);
@@ -92,13 +92,13 @@ class PackageInstall extends \Strukt\Console\Command{
 
 					$middlewares = $setting[$mdlKey];
 					foreach($middlewares as $middleware)
-						exec(sprintf("php ./xcli sys:util enable middleware %s", $middleware));
+						exec(sprintf("php xcli sys:util enable middleware %s", $middleware));
 				}
 
 				$cmdKey = sprintf("cmd.%s", $req);
 				if(array_key_exists($cmdKey, $setting))
 					if($setting[$cmdKey])
-						exec(sprintf("php ./xcli sys:util enable command %s", $req));
+						exec(sprintf("php xcli sys:util enable command %s", $req));
 			}
 		}
 	}
