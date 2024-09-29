@@ -97,8 +97,7 @@ class PackageInstall extends \Strukt\Console\Command{
 
 				$cmdKey = sprintf("cmd.%s", $req);
 				if(array_key_exists($cmdKey, $setting))
-					if($setting[$cmdKey])
-						exec(sprintf("php xcli sys:util enable command %s", $req));
+					exec(sprintf("php xcli sys:util enable command %s", $req));
 			}
 		}
 
