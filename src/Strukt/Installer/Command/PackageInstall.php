@@ -101,5 +101,8 @@ class PackageInstall extends \Strukt\Console\Command{
 						exec(sprintf("php xcli sys:util enable command %s", $req));
 			}
 		}
+
+		exec("php xcli cache:clear");
+		exec("php xcli cache:make");
 	}
 }
