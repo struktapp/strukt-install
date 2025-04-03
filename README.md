@@ -1,30 +1,31 @@
 Strukt Installer
 ===
 
-# Installation
+## Installation
 
 ```php
 composer global require "strukt/install"
 ```
 
-# Usage
+## Usage
 
 Create your application.
 
 ```sh
-strukt new contactapp
+strukt new payroll
+cd payroll
 ```
 
 Install available packages and publish.
 
 ```sh
-strukt add:package tests contactapp/ --publish
+strukt add tests --publish
 ```
 
 Available packages:
 
-- do
-- roles
+- db
+- auth
 - tests
 - asset
 
