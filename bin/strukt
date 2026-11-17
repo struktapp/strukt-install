@@ -1,16 +1,16 @@
 #!/usr/bin/env php
 <?php
 
-if (file_exists(__DIR__.'/../../../autoload.php')) {
-    require __DIR__.'/../../../autoload.php';
+declare(strict_types=1);
+
+if (file_exists(__DIR__ . '/../../../autoload.php')) {
+    require __DIR__ . '/../../../autoload.php';
 } else {
-    require __DIR__.'/../vendor/autoload.php';
+    require __DIR__ . '/../vendor/autoload.php';
 }
 
-// require "vendor/autoload.php";
+use Strukt\Console\Runtime\Application as ConsoleApplication;
 
-$console = new Strukt\Console\Application("Strukt Installer", "strukt");
-$console->add(new Strukt\Installer\Command\Installer);
-$console->add(new Strukt\Installer\Command\SelfUpdate);
-$console->add(new Strukt\Installer\Command\PackageInstall);
-exit($console->run($_SERVER["argv"]));
+$console = new ConsoleApplication(__DIR__ . '/../src/Strukt/Installer/Command');
+
+exit($console->run($_SERVER['argv']));

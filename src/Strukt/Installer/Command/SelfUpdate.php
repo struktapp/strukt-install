@@ -1,28 +1,31 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Strukt\Installer\Command;
 
-use Strukt\Console\Color;
-use Strukt\Console\Input;
-use Strukt\Console\Output;
-use Strukt\Process;
+use Strukt\Console\Runtime\CommandInterface;
 
 /**
-* update:me    Update Strukt Installer
-*/
-class SelfUpdate extends \Strukt\Console\Command{
+ * @command update:me
+ * @description Update Strukt Installer
+ */
+final class SelfUpdate implements CommandInterface
+{
+    public function execute(array $arguments, array $options): int
+    {
+        $composerHome = realpath(__DIR__ . '/../../../../../../../');
 
-	public function execute(Input $in, Output $out){
+        $cmd = sprintf('composer update strukt/install --working-dir=%s', $composerHome);
 
-		$composer_home = realpath(__DIR__."/../../../../../../../");
+        \switchChannels();
 
-		$cmd = sprintf("composer update strukt/install --working-dir=%s", $composer_home);
+        $ps = \process([$cmd], function ($streamOutput) {
+            if ($streamOutput !== null) {
+                echo $streamOutput;
+            }
+        });
 
-		switchChannels();
-		$ps = process([$cmd], function($streamOutput){
-
-			if(!is_null($streamOutput))
-				echo color("cyan", $streamOutput);
-		});
-	}
+        return 0;
+    }
 }

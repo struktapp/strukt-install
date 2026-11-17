@@ -1,107 +1,112 @@
 <?php
 
+declare (strict_types = 1);
+
 namespace Strukt\Installer\Command;
 
-use Strukt\Console\Color;
-use Strukt\Console\Input;
-use Strukt\Console\Output;
-use Strukt\Process;
+use Strukt\Console\Runtime\CommandInterface;
 
 /**
-* add    Install Strukt Module
-*
-* Usage:
-*
-*       add <module> [<app_name>] [--publish]
-*
-* Arguments:
-*
-*       module    Module Name
-*       app_name  Application Name Folder
-*
-* Options:
-*
-*      --publish -p   Publish package and requirements after installation
-*/
-class PackageInstall extends \Strukt\Console\Command{
+ * @command add
+ * @description Install Strukt Module
+ * @usage add <module> [<app_name>] [--publish]
+ *
+ * @argument module
+ * @description Module Name
+ *
+ * @argument app_name
+ * @description Application Name Folder
+ *
+ * @option publish
+ * @flag
+ * @short p
+ * @description Publish package and requirements after installation
+ */
+final class PackageInstall implements CommandInterface
+{
+    public function execute(array $arguments, array $options): int
+    {
+        $name = array_key_exists('app_name', $arguments) && $arguments['app_name'] !== null
+            ? $arguments['app_name']
+            : '.';
 
-	public function execute(Input $in, Output $out){
+        $module = $arguments['module'] ?? null;
+        if (! preg_match('/^pkg\-/', (string) $module)) {
+            $module = sprintf('pkg-%s', $module);
+        }
 
-		$name = $in->get("app_name");
-		$inputs = $in->getInputs();
-		if(!array_key_exists("app_name", $inputs))
-			$name = ".";
-		
-		$module = $in->get("module");
-		if(!preg_match("/^pkg\-/", $module))
-			$module = sprintf("pkg-%s", $module);
+        $setting = parse_ini_file(__DIR__ . '/../../../../strukt.ini');
+        if (! array_key_exists($module, $setting['modules'])) {
+            throw new \Exception(sprintf('Module [%s] does not exist!', $module));
+        }
 
-		$setting = parse_ini_file(__DIR__."/../../../../strukt.ini");
-		if(!array_key_exists($module, $setting["modules"]))
-			throw new \Exception(sprintf("Module [%s] does not exist!", $module));
+        $lock = sprintf('%s/composer.lock', $name);
+        if (is_file($lock)) {
+            unlink($lock);
+        }
 
-		\Strukt\Fs::rm(sprintf("%s/composer.lock", $name));
+        $cmd = sprintf(
+            'composer require strukt/%s:%s --working-dir=%s',
+            $module,
+            $setting['modules'][$module],
+            $name
+        );
 
-		$cmd = sprintf("composer require strukt/%s:%s --working-dir=%s", 
-						$module,
-						$setting["modules"][$module],
-						$name);
+        \switchChannels();
 
-		switchChannels();
-		$ps = process([$cmd], function($streamOutput){
+        $ps = \process([$cmd], function ($streamOutput) {
+            if ($streamOutput !== null) {
+                echo $streamOutput;
+            }
+        });
 
-			if(!is_null($streamOutput))
-				echo color("cyan", $streamOutput);
-		});
+        // $reqs = [];
+        // $isPublished = false;
+        // if (!empty($options['publish'])) {
+        //     if (chdir($name)) {
+        //         $reqKey = sprintf('req.%s', $module);
+        //         if (array_key_exists($reqKey, $setting)) {
+        //             foreach ($setting[$reqKey] as $req) {
+        //                 $reqs[] = $req;
+        //                 exec(sprintf('php bin/strukt package:publish %s', $req));
+        //             }
+        //         }
 
-		$reqs = [];
-		$isPublished = false;
-		if(array_key_exists("publish", $in->getInputs())){
+        //         exec(sprintf('php bin/strukt package:publish %s', $module));
+        //     }
 
-			if(chdir($name)){
+        //     $isPublished = true;
+        // }
 
-				$reqKey = sprintf("req.%s", $module);
-				if(array_key_exists($reqKey, $setting))
-					foreach($setting[$reqKey] as $req){
+        // if ($isPublished) {
+        //     $reqs[] = $module;
+        //     foreach ($reqs as $req) {
+        //         $prvKey = sprintf('prv.%s', $req);
+        //         if (array_key_exists($prvKey, $setting)) {
+        //             $providers = $setting[$prvKey];
+        //             foreach ($providers as $provider) {
+        //                 exec(sprintf('php bin/strukt sys:util enable provider %s', $provider));
+        //             }
+        //         }
 
-						$reqs[] = $req;
-						exec(sprintf("php xcli package:publish %s", $req));
-					}
+        //         $mdlKey = sprintf('mdl.%s', $req);
+        //         if (array_key_exists($mdlKey, $setting)) {
+        //             $middlewares = $setting[$mdlKey];
+        //             foreach ($middlewares as $middleware) {
+        //                 exec(sprintf('php bin/strukt sys:util enable middleware %s', $middleware));
+        //             }
+        //         }
 
-				exec(sprintf("php xcli package:publish %s", $module));
-			}
+        //         $cmdKey = sprintf('cmd.%s', $req);
+        //         if (array_key_exists($cmdKey, $setting)) {
+        //             exec(sprintf('php bin/strukt sys:util enable command %s', $req));
+        //         }
+        //     }
+        // }
 
-			$isPublished = true;
-		}
+        // exec('php bin/strukt cache:clear');
+        // exec('php bin/strukt cache:make');
 
-		if($isPublished){
-
-			$reqs[] = $module;
-			foreach($reqs as $req){
-
-				$prvKey = sprintf("prv.%s", $req);
-				if(array_key_exists($prvKey, $setting)){
-
-					$providers = $setting[$prvKey];
-					foreach($providers as $provider)
-						exec(sprintf("php xcli sys:util enable provider %s", $provider));
-				}
-
-				$mdlKey = sprintf("mdl.%s", $req);
-				if(array_key_exists($mdlKey, $setting)){
-
-					$middlewares = $setting[$mdlKey];
-					foreach($middlewares as $middleware)
-						exec(sprintf("php xcli sys:util enable middleware %s", $middleware));
-				}
-
-				$cmdKey = sprintf("cmd.%s", $req);
-				if(array_key_exists($cmdKey, $setting))
-					exec(sprintf("php xcli sys:util enable command %s", $req));
-			}
-		}
-
-		exec("php xcli cache:clear");
-		exec("php xcli cache:make");
-	}
+        return 0;
+    }
 }

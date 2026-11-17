@@ -1,62 +1,63 @@
 <?php
 
+declare (strict_types = 1);
+
 namespace Strukt\Installer\Command;
 
-use Strukt\Console\Color;
-use Strukt\Console\Input;
-use Strukt\Console\Output;
-use Strukt\Process;
+use Strukt\Console\Runtime\CommandInterface;
 
 /**
-* new    Install latest Strukt
-*
-* Usage:
-*
-*       name <app_name>
-*
-* Arguments:
-*
-*       app_name   Application Name
-*/
-class Installer extends \Strukt\Console\Command{
+ * @command new
+ * @description Install latest Strukt
+ * @usage new <app_name>
+ *
+ * @argument app_name
+ * @description Application Name
+ */
+final class Installer implements CommandInterface
+{
+    public function execute(array $arguments, array $options): int
+    {
+        $appName = $arguments['app_name'] ?? null;
+        if (empty($appName)) {
+            throw new \Exception('Argument [app_name] is required!');
+        }
 
-	public function execute(Input $in, Output $out){
+        $setting = parse_ini_file(__DIR__ . '/../../../../strukt.ini');
 
-		$app_name = $in->get("app_name");
-		if(empty($app_name))
-			throw new \Exception("Argument [app_name] is required!");
+        $package = $setting['package']['main'];
+        $version = $setting['package']['version'];
+        $command = sprintf(
+            'composer create-project %s:%s --prefer-dist --stability=dev %s',
+            $package,
+            $version,
+            $appName
+        );
 
-		$setting = parse_ini_file(__DIR__."/../../../../strukt.ini");
+        echo sprintf("%s\n", $command);
 
-		$package = $setting["package"]["main"];
-		$version = $setting["package"]["version"];
-		$command = sprintf("composer create-project %s:%s --prefer-dist --stability=dev %s",
-						$package,
-						$version,
-						$app_name);
+        \switchChannels();
 
-		echo(sprintf("%s\n", $command));
+        $ps = \process([$command], function ($streamOutput) {
+            if ($streamOutput !== null) {
+                echo $streamOutput;
+            }
+        });
 
-		switchChannels();
-		$ps = process([$command], function($streamOutput) use($app_name){
+        if (chdir($appName)) {
+            if (! preg_match('/^[A-Za-z0-9\_\-]*$/', $appName)) {
+                new \Exception(sprintf('Invalid app_name:[%s]', $appName));
+            }
 
-			if(!is_null($streamOutput))
-				echo color("cyan", $streamOutput);
+            $appName = str_replace(['-', '.'], '_', $appName);
+            $appName = trim($appName, '*-_');
 
-			if(is_null($streamOutput))//when finished processing
-				if(chdir($app_name)){
+            // exec(sprintf('php bin/strukt app:make %s', $appName));
+            // exec('php bin/strukt app:reload');
+            // exec('php bin/strukt cache:clear');
+            // exec('php bin/strukt cache:make');
+        }
 
-					if(!preg_match("/^[A-Za-z0-9\_\-]*$/", $app_name))
-						new \Exception(sprintf("Invalid app_name:[%s]", $app_name));
-
-					$app_name = str_replace(["-","."], "_", $app_name);
-					$app_name = trim($app_name, "*-_");
-
-					exec(sprintf("php xcli app:make %s", $app_name));
-					exec("php xcli app:reload");
-					exec("php xcli cache:clear");
-					exec("php xcli cache:make");
-				}
-		});			
-	}
+        return 0;
+    }
 }
