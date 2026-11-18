@@ -117,6 +117,194 @@ final class DevInstaller
         return is_file(self::packagePath($config, $slug) . '/composer.json');
     }
 
+    public static function bundleSlug(string $name): string
+    {
+        $slug = preg_replace('#^strukt/#', '', strtolower(trim($name))) ?? '';
+        $slug = str_replace('_', '-', $slug);
+        $slug = preg_replace('/[^a-z0-9-]+/', '-', $slug) ?? '';
+        $slug = trim($slug, '-');
+
+        if ($slug === '') {
+            throw new RuntimeException('Argument [bundle] must be a valid bundle name.');
+        }
+
+        if (!str_starts_with($slug, 'bundle-')) {
+            $slug = 'bundle-' . $slug;
+        }
+
+        if (!preg_match('/^bundle-[a-z0-9][a-z0-9-]*$/', $slug)) {
+            throw new RuntimeException(sprintf('Invalid bundle name [%s].', $name));
+        }
+
+        return $slug;
+    }
+
+    public static function bundlePackageName(string $name): string
+    {
+        return 'strukt/' . self::bundleSlug($name);
+    }
+
+    public static function packagistVersions(string $package): array
+    {
+        if (!preg_match('#^strukt/[a-z0-9][a-z0-9-]*$#', $package)) {
+            throw new RuntimeException(sprintf('Invalid package name [%s].', $package));
+        }
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => "User-Agent: strukt-install\r\nAccept: application/json\r\n",
+                'timeout' => 30,
+                'follow_location' => 1,
+                'max_redirects' => 5,
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ],
+        ]);
+
+        $source = @fopen('https://repo.packagist.org/p2/' . $package . '.json', 'rb', false, $context);
+        if ($source === false) {
+            return [];
+        }
+
+        $contents = stream_get_contents($source);
+        fclose($source);
+        if ($contents === false || $contents === '') {
+            return [];
+        }
+
+        $data = json_decode($contents, true);
+        if (!is_array($data)) {
+            return [];
+        }
+
+        $entries = $data['packages'][$package] ?? [];
+        if (!is_array($entries)) {
+            return [];
+        }
+
+        $versions = [];
+        foreach ($entries as $entry) {
+            if (is_array($entry) && is_string($entry['version'] ?? null) && $entry['version'] !== '') {
+                $versions[] = $entry['version'];
+            }
+        }
+
+        return $versions;
+    }
+
+    public static function latestStableVersion(array $versions): ?string
+    {
+        $stable = [];
+        foreach ($versions as $version) {
+            if (!is_string($version)) {
+                continue;
+            }
+
+            if (!preg_match('/^v?\d+\.\d+\.\d+(?:[-.]\d+)?$/', ltrim($version, 'v'))) {
+                continue;
+            }
+
+            $stable[] = $version;
+        }
+
+        if ($stable === []) {
+            return null;
+        }
+
+        usort($stable, static fn (string $a, string $b): int => version_compare(
+            ltrim($a, 'v'),
+            ltrim($b, 'v')
+        ));
+
+        return $stable[array_key_last($stable)];
+    }
+
+    public static function localPackagePath(array $config, string $slug): string
+    {
+        return $config['cache_dir'] . '/local/' . $slug;
+    }
+
+    public static function bundlePaths(array $config, string $slug): array
+    {
+        return [
+            self::localPackagePath($config, $slug),
+            self::packagePath($config, $slug),
+        ];
+    }
+
+    public static function findBundle(array $config, string $slug): ?string
+    {
+        foreach (self::bundlePaths($config, $slug) as $path) {
+            if (!is_file($path . '/composer.json')) {
+                continue;
+            }
+
+            if ((glob($path . '/src/Strukt/Bundle/Bundle*.php') ?: []) === []) {
+                continue;
+            }
+
+            return $path;
+        }
+
+        return null;
+    }
+
+    public static function bundleUnavailableMessage(string $slug): string
+    {
+        return sprintf('Bundle [%s] is unavailable. Please contact the vendor.', $slug);
+    }
+
+    public static function addBundleRepository(array $composer, string $slug, string $path, string $version = 'dev-master'): array
+    {
+        $package = 'strukt/' . $slug;
+        $repository = [
+            'type' => 'path',
+            'url' => $path,
+            'options' => ['symlink' => true],
+        ];
+
+        $repositories = $composer['repositories'] ?? [];
+        if (!is_array($repositories)) {
+            $repositories = [];
+        }
+
+        if (array_is_list($repositories)) {
+            $replaced = false;
+            foreach ($repositories as $index => $existing) {
+                if (!is_array($existing) || ($existing['url'] ?? null) !== $path) {
+                    continue;
+                }
+
+                $repositories[$index] = $repository;
+                $replaced = true;
+                break;
+            }
+
+            if (!$replaced) {
+                $repositories[] = $repository;
+            }
+        } else {
+            $repositories[$package] = $repository;
+        }
+
+        $require = $composer['require'] ?? [];
+        if (!is_array($require)) {
+            $require = [];
+        }
+
+        $require[$package] = $version;
+
+        $composer['repositories'] = $repositories;
+        $composer['require'] = $require;
+        $composer['minimum-stability'] = 'dev';
+        $composer['prefer-stable'] = false;
+
+        return $composer;
+    }
+
     /**
      * Copies a cached skeleton into a new application directory.
      */

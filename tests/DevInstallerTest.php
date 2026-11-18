@@ -238,6 +238,93 @@ $test('relinks skeleton binary stubs', static function () use ($assertSame, $ass
     }
 });
 
+$test('normalizes bundle names', static function () use ($assertSame): void {
+    $assertSame('bundle-book', DevInstaller::bundleSlug('book'), 'short bundle name');
+    $assertSame('bundle-book', DevInstaller::bundleSlug('strukt/bundle-book'), 'package name');
+    $assertSame('bundle-abc-xyz', DevInstaller::bundleSlug('bundle_abc_xyz'), 'underscored slug');
+});
+
+$test('reports unavailable bundles', static function () use ($assertSame): void {
+    $assertSame(
+        'Bundle [bundle-book] is unavailable. Please contact the vendor.',
+        DevInstaller::bundleUnavailableMessage('bundle-book'),
+        'unavailable message'
+    );
+});
+
+$test('finds cached bundles before downloading', static function () use ($assertSame, $assertTrue): void {
+    $temp = sys_get_temp_dir() . '/strukt-bundle-cache-test-' . bin2hex(random_bytes(6));
+    $config = DevInstaller::normalizeConfig([
+        'dev' => [
+            'version' => 'dev-master',
+            'github_org' => 'https://github.com/struktapp',
+            'branch' => 'master',
+            'skeleton' => 'strukt',
+            'cache_dir' => $temp,
+            'packages' => [],
+        ],
+    ]);
+    $local = $config['cache_dir'] . '/local/bundle-book';
+    $master = DevInstaller::packagePath($config, 'bundle-book');
+    $create = static function (string $path): void {
+        mkdir($path . '/src/Strukt/Bundle', 0775, true);
+        file_put_contents($path . '/composer.json', '{"name":"strukt/bundle-book"}');
+        file_put_contents($path . '/src/Strukt/Bundle/BundleBook.php', "<?php\n");
+    };
+
+    try {
+        $assertSame(null, DevInstaller::findBundle($config, 'bundle-book'), 'no cached bundle');
+
+        $create($master);
+        $assertSame($master, DevInstaller::findBundle($config, 'bundle-book'), 'master cached bundle');
+
+        $create($local);
+        $assertSame($local, DevInstaller::findBundle($config, 'bundle-book'), 'local cached bundle wins');
+        $assertTrue(is_file($local . '/composer.json'), 'local bundle exists');
+    } finally {
+        DevInstaller::removeDirectory($temp);
+    }
+});
+
+$test('adds a cached bundle to project composer configuration', static function () use ($assertSame): void {
+    $result = DevInstaller::addBundleRepository([
+        'name' => 'example/app',
+        'require' => ['php' => '>=8.2'],
+        'repositories' => [
+            ['type' => 'path', 'url' => '/tmp/other'],
+        ],
+    ], 'bundle-book', '/tmp/strukt/local/bundle-book', 'dev-master');
+
+    $assertSame('dev-master', $result['require']['strukt/bundle-book'], 'bundle requirement');
+    $assertSame('/tmp/strukt/local/bundle-book', $result['repositories'][1]['url'], 'bundle repository');
+    $assertSame('dev', $result['minimum-stability'], 'minimum stability');
+    $assertSame(false, $result['prefer-stable'], 'prefer stable');
+});
+
+$test('resolves bundle package names', static function () use ($assertSame): void {
+    $assertSame('strukt/bundle-auth', DevInstaller::bundlePackageName('auth'), 'short bundle name');
+    $assertSame('strukt/bundle-auth', DevInstaller::bundlePackageName('strukt/bundle-auth'), 'package name');
+});
+
+$test('selects the latest stable Packagist version', static function () use ($assertSame): void {
+    $assertSame(
+        'v1.10.0',
+        DevInstaller::latestStableVersion([
+            'dev-master',
+            'v2.0.0-beta.1',
+            'v1.9.0',
+            'v1.10.0',
+            'v1.2.0',
+        ]),
+        'latest stable version'
+    );
+    $assertSame(
+        null,
+        DevInstaller::latestStableVersion(['dev-master', '1.0.0-beta', 'v2.0.0-rc1']),
+        'no stable version'
+    );
+});
+
 $failures = 0;
 foreach ($tests as $name => $callback) {
     try {

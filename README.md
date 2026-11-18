@@ -31,18 +31,26 @@ for third-party dependencies.
 
 Pass `--refresh` to re-download cached packages.
 
-Install available packages and publish.
+Add a bundle to an existing project from the same cache.
 
 ```sh
-strukt add tests --publish
+cd payroll
+strukt add:dev book
 ```
 
-Available packages:
+The bundle is resolved as `bundle-<name>` when needed. `add:dev` checks
+`~/.cache/strukt/local/` and `~/.cache/strukt/<branch>/` before downloading.
+If the bundle cannot be found, the command aborts and asks you to contact the
+vendor.
 
-- db
-- auth
-- tests
-- asset
+Install the latest stable bundle from Packagist.
+
+```sh
+strukt add auth
+```
+
+`add` resolves `auth` to `strukt/bundle-auth`, selects the newest stable
+version published on Packagist, and requires it with Composer.
 
 Update Installer.
 
